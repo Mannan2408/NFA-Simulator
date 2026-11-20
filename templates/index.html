@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFA Simulator</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">N</div>
+            <div>
+                <h2>NFA Simulator</h2>
+                <span>Automata Workbench</span>
+            </div>
+        </div>
+
+        <div class="nav-label">WORKSPACE</div>
+
+        <nav>
+            <a class="nav-item active" href="#builder">
+                <span>◈</span> Automaton Builder
+            </a>
+            <a class="nav-item" href="#visualization">
+                <span>◎</span> Visualization
+            </a>
+            <a class="nav-item" href="#simulator">
+                <span>▷</span> String Simulator
+            </a>
+            <a class="nav-item" href="#transitions">
+                <span>▦</span> Transition Table
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span>System Ready</span>
+            <span class="version">v1.0</span>
+        </div>
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <div class="breadcrumb">WORKSPACE / AUTOMATON</div>
+                <h1>Automaton Builder</h1>
+            </div>
+
+            <div class="topbar-right">
+                <span class="system-status">● Ready to build</span>
+            </div>
+        </header>
+
+
+        <section class="welcome">
+            <div>
+                <span class="eyebrow">AUTOMATA THEORY & COMPUTATION</span>
+                <h2>Design your automaton.</h2>
+                <p>Define states, configure transitions and simulate
+                   your finite automaton in real time.</p>
+            </div>
+            <div class="welcome-symbol">Σ</div>
+        </section>
+
+
+        <!-- AUTOMATON BUILDER -->
+        <section class="panel" id="builder">
+
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">01 / CONFIGURATION</span>
+                    <h2>Define Automaton</h2>
+                    <p>Configure the fundamental properties of your machine.</p>
+                </div>
+            </div>
+
+            <div class="machine-selector">
+                <label>Automaton Type</label>
+
+                <div class="machine-options">
+                    <label class="machine-option selected">
+                        <input type="radio" name="machineType"
+                               value="nfa" checked>
+                        <span>
+                            <strong>Standard NFA</strong>
+                            <small>Non-deterministic finite automaton</small>
+                        </span>
+                    </label>
+
+                    <label class="machine-option">
+                        <input type="radio" name="machineType"
+                               value="epsilon">
+                        <span>
+                            <strong>ε-NFA</strong>
+                            <small>With epsilon transitions</small>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>States</label>
+                    <input id="states" placeholder="q0, q1, q2">
+                    <small>Separate states using commas.</small>
+                </div>
+
+                <div class="field">
+                    <label>Alphabet (Σ)</label>
+                    <input id="alphabet" placeholder="0, 1">
+                    <small>Enter your input symbols.</small>
+                </div>
+
+                <div class="field">
+                    <label>Start State</label>
+                    <input id="startState" placeholder="q0">
+                    <small>Choose one initial state.</small>
+                </div>
+
+                <div class="field">
+                    <label>Final States (F)</label>
+                    <input id="finalStates" placeholder="q2">
+                    <small>Multiple final states are allowed.</small>
+                </div>
+
+            </div>
+
+            <div class="section-heading transition-heading"
+                 id="transitions">
+                <div>
+                    <h3>Transition Function</h3>
+                    <p>Define how your automaton moves between states.</p>
+                </div>
+
+                <button class="button secondary" id="addTransition">
+                    + Add Transition
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>FROM STATE</th>
+                            <th>INPUT SYMBOL</th>
+                            <th>TO STATE(S)</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transitionBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="builder-actions">
+                <button class="button secondary" id="exampleBtn">
+                    Load Example
+                </button>
+
+                <button class="button secondary" id="clearBtn">
+                    Clear All
+                </button>
+
+                <button class="button primary" id="generateBtn">
+                    Generate Automaton →
+                </button>
+            </div>
+
+            <div id="message"></div>
+
+        </section>
+
+
+        <!-- VISUALIZATION -->
+        <section class="panel" id="visualization">
+
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">02 / VISUALIZATION</span>
+                    <h2>State Diagram</h2>
+                    <p>Your automaton will be visualized here.</p>
+                </div>
+                <span class="tag">LIVE VIEW</span>
+            </div>
+
+            <div class="graph-placeholder">
+                <div class="graph-icon">◎</div>
+                <h3>No automaton generated</h3>
+                <p>Configure your states and transitions, then click
+                   Generate Automaton.</p>
+            </div>
+
+        </section>
+
+
+        <!-- STRING SIMULATOR -->
+        <section class="panel" id="simulator">
+
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">03 / SIMULATION</span>
+                    <h2>String Simulator</h2>
+                    <p>Test whether your automaton accepts an input string.</p>
+                </div>
+            </div>
+
+            <div class="simulator-input">
+                <div class="field">
+                    <label>Input String</label>
+                    <input id="testString" placeholder="Enter a string">
+                </div>
+
+                <button class="button primary" id="testBtn">
+                    ▶ Run Simulation
+                </button>
+            </div>
+
+            <div id="simulationResult"></div>
+
+        </section>
+
+
+        <footer>
+            NFA Simulator · Automata Theory & Computability
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
