@@ -735,6 +735,7 @@ function escapeResult(value) {
 // DISPLAY SIMULATION RESULT
 // ------------------------------------------
 
+
 function displaySimulationResult(result) {
 
     const container = $("simulationResult");
@@ -747,7 +748,15 @@ function displaySimulationResult(result) {
         ? "STRING ACCEPTED ✓"
         : "STRING REJECTED ✗";
 
-    let html = `
+    const finalStates = result.final_states_reached.length
+        ? result.final_states_reached.map(escapeResult).join(", ")
+        : "∅";
+
+    const acceptingStates = result.accepting_states.length
+        ? result.accepting_states.map(escapeResult).join(", ")
+        : "None";
+
+    const html = `
 
         <div class="simulation-card">
 
@@ -780,78 +789,15 @@ function displaySimulationResult(result) {
 
             </div>
 
-            <h3>Execution Trace</h3>
-
-            <p class="trace-description">
-                Follow how the automaton processes each input symbol.
-            </p>
-
-            <div class="trace-list">
-    `;
-
-    result.steps.forEach(step => {
-
-        const states = step.states.length
-            ? step.states.map(escapeResult).join(", ")
-            : "∅";
-
-        html += `
-
-            <div class="trace-step">
-
-                <div class="trace-number">
-                    ${step.step}
-                </div>
-
-                <div class="trace-content">
-
-                    <span class="trace-symbol">
-                        ${escapeResult(step.symbol)}
-                    </span>
-
-                    <strong>
-                        { ${states} }
-                    </strong>
-
-                    <small>
-                        ${escapeResult(step.description)}
-                    </small>
-
-                </div>
-
-            </div>
-
-        `;
-
-    });
-
-    html += `
-
-            </div>
-
             <div class="final-configuration">
 
                 <span>Final State Configuration</span>
 
-                <strong>
-                    { ${
-                        result.final_states_reached.length
-                            ? result.final_states_reached
-                                .map(escapeResult).join(", ")
-                            : "∅"
-                    } }
-                </strong>
+                <strong>{ ${finalStates} }</strong>
 
                 <span>Accepting States Reached</span>
 
-                <strong>
-                    ${
-                        result.accepting_states.length
-                            ? result.accepting_states
-                                .map(escapeResult).join(", ")
-                            : "None"
-                    }
-                </strong>
+                <strong>${acceptingStates}</strong>
 
             </div>
 
@@ -862,6 +808,7 @@ function displaySimulationResult(result) {
     container.innerHTML = html;
 
 }
+
 
 // ------------------------------------------
 // STRING SIMULATOR EVENTS
