@@ -1,215 +1,238 @@
 # NFA Simulator
 
-A web-based **Nondeterministic Finite Automaton (NFA) Simulator** built
-with Python and Flask. It allows users to define an NFA or an ε-NFA,
-visualize its state-transition diagram, and test input strings to
-determine whether they are accepted or rejected.
+A Python-based web application for creating, visualizing, and simulating **Nondeterministic Finite Automata (NFA)**, including **Epsilon-NFA (ε-NFA)**.
+
+The NFA Simulator provides an interactive interface where users can define states, transitions, input symbols, start states, and final states, generate automata diagrams, and test input strings to determine whether they are accepted or rejected.
+
+---
+
+## Overview
+
+The NFA Simulator is designed as an educational tool to help students understand the working of Nondeterministic Finite Automata through interactive automaton generation, visualization, and string simulation.
+
+It supports both standard NFA and ε-NFA, allowing transitions between states using input symbols as well as epsilon transitions.
 
 ## Features
 
--   **NFA and ε-NFA support** --- choose between a standard NFA and an
-    epsilon-NFA.
--   **Automaton builder** --- define states, input alphabet, start
-    state, final states, and transitions.
--   **Multiple destinations** --- a transition can lead to more than one
-    state.
--   **Epsilon transitions** --- enter either `ε` or capital `E` in the
-    transition editor to represent an epsilon transition. Capital `E` is
-    reserved for epsilon; use a different symbol if `e` is intended as
-    an ordinary input symbol.
--   **Automatic state diagram** --- generate an SVG visualization
-    showing the start state, final states, transitions, and transition
-    labels.
--   **String simulation** --- submit an input string and see whether the
-    automaton accepts or rejects it.
--   **Execution results** --- view the resulting state configuration and
-    the simulation's state-set results.
--   **Input validation** --- checks state names, start/final states,
-    transition endpoints, and input symbols.
--   **Browser-based interface** --- use the simulator through a local
-    web browser.
+### 1. Automaton Creation
+- Define multiple states dynamically.
+- Specify the start state.
+- Select one or more final states.
+- Add and remove transitions.
+- Define multiple destinations for transitions.
+- Support for standard NFA and ε-NFA.
 
-## Tech Stack
+### 2. Epsilon-NFA Support
+- Supports epsilon (ε) transitions without consuming input symbols.
+- Accepts the actual epsilon symbol (ε).
+- Supports uppercase `E` as an alternative representation of epsilon.
+- Implements epsilon closure handling during simulation.
 
--   **Python** --- automata and simulation logic
--   **Flask** --- web application and simulation API
--   **HTML** --- page structure
--   **CSS** --- interface styling
--   **JavaScript** --- transition editor, diagram rendering, and
-    browser-side interactions
--   **SVG** --- state diagram rendering
+### 3. State Diagram Visualization
+- Automatically generates state diagrams.
+- Visual distinction between start states and final states.
+- Displays transition arrows and labels.
+- Supports self-loops.
+- Supports curved transitions for improved diagram readability.
+
+### 4. Transition Table
+- Automatically generates the transition table.
+- Displays destination states for each input symbol.
+- Uses the empty-set symbol (∅) when no transition exists.
+- Highlights start and final states.
+
+### 5. String Simulator
+- Enter custom input strings to test the generated automaton.
+- Determines whether an input string is accepted or rejected.
+- Handles nondeterministic transitions.
+- Supports epsilon transitions during string processing.
+- Displays simulation results and execution details.
+
+### 6. Interactive User Interface
+- Modern dark-themed interface.
+- Dynamic transition input fields.
+- Load Example functionality.
+- Clear All functionality.
+- Responsive layout.
+
+---
+
+## Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| Python | Core application logic |
+| Flask | Backend web framework |
+| HTML5 | Application structure |
+| CSS3 | Styling and UI design |
+| JavaScript | Frontend interaction and visualization |
+| SVG | State diagram rendering |
+
+---
 
 ## Project Structure
 
-``` text
+```text
 NFA-Simulator/
-├── app.py                 # Flask application and simulation API
-├── automata.py            # NFA and epsilon-NFA computation
-├── requirements.txt       # Python dependencies
-├── .gitignore             # Files excluded from Git
+│
+├── static/
+│   ├── script.js
+│   └── style.css
+│
 ├── templates/
-│   └── index.html         # Main web interface
-└── static/
-    ├── style.css          # UI styling
-    └── script.js          # Builder, visualization, and frontend logic
+│   └── index.html
+│
+├── app.py
+├── automata.py
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
-A local virtual environment (for example, `venv/`) is used for Python
-dependencies and should not be committed to the repository.
+---
 
-## Getting Started
+## Installation and Setup
 
-### 1. Clone the repository
+Follow these steps to run the NFA Simulator locally.
 
-``` bash
-git clone <YOUR_REPOSITORY_URL>
+### Prerequisites
+
+- Python 3.x
+- Visual Studio Code (recommended)
+- Git (optional)
+
+### Step 1: Clone the Repository
+
+```bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+```
+
+Navigate into the project directory:
+
+```bash
 cd NFA-Simulator
 ```
 
-Replace `<YOUR_REPOSITORY_URL>` with the HTTPS or SSH URL of your GitHub
-repository.
+### Step 2: Create a Virtual Environment
 
-### 2. Create a virtual environment
-
-**Windows (Command Prompt / PowerShell):**
-
-``` bash
+```bash
 python -m venv venv
-venv\\Scripts\\activate
 ```
 
-**macOS / Linux:**
+### Step 3: Activate the Virtual Environment
 
-``` bash
-python3 -m venv venv
+**Windows:**
+
+```bash
+venv\Scripts\activate
+```
+
+**Linux / macOS:**
+
+```bash
 source venv/bin/activate
 ```
 
-### 3. Install dependencies
+### Step 4: Install Dependencies
 
-``` bash
-python -m pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
 ```
 
-If `requirements.txt` does not yet list Flask, add this line to it:
+### Step 5: Run the Application
 
-``` text
-Flask
-```
-
-Then run the install command again.
-
-### 4. Start the application
-
-``` bash
+```bash
 python app.py
 ```
 
-Open the local address shown in the terminal. With the default Flask
-configuration, this is usually:
+### Step 6: Open in Browser
 
-``` text
+Open the following URL in your browser:
+
+```text
 http://127.0.0.1:5000/
 ```
 
-## How to Use
+The NFA Simulator is now ready to use!
 
-1.  Open the application in your browser.
-2.  Select **Standard NFA** or **ε-NFA**.
-3.  Enter the states, alphabet, start state, and one or more final
-    states.
-4.  Add transitions using the transition editor.
-    -   Enter one source state.
-    -   Enter an input symbol.
-    -   Enter one or more destination states, separated by commas.
-    -   For an ε-NFA transition, enter `ε` or capital `E`.
-5.  Select **Generate Automaton** to validate the definition and render
-    its state diagram.
-6.  Enter a string in the String Simulator and run the simulation.
-7.  Read the result to see whether the input is accepted or rejected.
+---
 
-### Example ε-NFA
+## How It Works
 
-Use the following definition to try a simple epsilon-NFA:
+The application follows a simple workflow:
 
-  Setting        Value
-  -------------- --------------
-  States         `q0, q1, q2`
-  Alphabet       `a, b`
-  Start state    `q0`
-  Final states   `q2`
+1. **Define States:** Enter the states of the automaton.
+2. **Configure Transitions:** Specify source states, input symbols, and destination states.
+3. **Select States:** Choose the initial state and final states.
+4. **Generate Automaton:** Generate the state diagram and transition table.
+5. **Enter Input String:** Provide a string to test against the automaton.
+6. **Run Simulation:** The application processes the input using NFA transition logic and epsilon closure where applicable.
+7. **View Results:** Check whether the input string is accepted or rejected.
 
-Transitions:
+---
 
-  From   Input   To
-  ------ ------- ------
-  `q0`   `E`     `q1`
-  `q1`   `a`     `q1`
-  `q1`   `b`     `q2`
+## Automata Theory
 
-The string `ab` should be accepted. The string `a` should be rejected.
+A Nondeterministic Finite Automaton (NFA) is formally represented as:
 
-## How the Simulation Works
+**NFA:**
 
-### Standard NFA
+M = (Q, Σ, δ, q₀, F)
 
-For each input symbol, the simulator finds all possible destination
-states from the current set of states. The next configuration is the
-union of those destinations.
+Where:
 
-### Epsilon-NFA
+- Q = Finite set of states
+- Σ = Input alphabet
+- δ = Transition function
+- q₀ = Initial state
+- F = Set of final states
 
-An ε-NFA can move along epsilon transitions without consuming an input
-symbol. The simulator therefore:
+For an NFA:
 
-1.  Computes the epsilon closure of the start state.
-2.  Processes each input symbol from the current set of states.
-3.  Computes epsilon closure again after each symbol.
-4.  Accepts the string if at least one state in the final configuration
-    is a final state.
+δ: Q × Σ → 2^Q
 
-The epsilon closure includes the supplied state or states themselves, as
-well as every state reachable through zero or more epsilon transitions.
+For an Epsilon-NFA:
 
-## Current Scope
+δ: Q × (Σ ∪ {ε}) → 2^Q
 
-The current project focuses on automaton definition, validation,
-state-diagram generation, and string acceptance testing for NFAs and
-ε-NFAs.
+An epsilon transition allows the automaton to move between states without consuming an input symbol.
 
-The following are **not part of the current implementation scope** and
-may be considered for a later version:
+---
 
--   Step-by-step animated simulation
--   Interactive execution-trace playback
--   Animated highlighting of each transition as the input is processed
--   Further layout improvements for large or complex automata
+## Future Enhancements
 
-## Troubleshooting
+The following features may be considered for future development:
 
--   **`ModuleNotFoundError: No module named 'flask'`**: Activate the
-    project's virtual environment and run
-    `python -m pip install -r requirements.txt`. If Flask is not listed
-    in `requirements.txt`, add `Flask` and install again.
--   **VS Code cannot resolve the Flask import**: Select the interpreter
-    at `venv/Scripts/python.exe` on Windows or `venv/bin/python` on
-    macOS/Linux.
--   **The page does not load**: Confirm that `python app.py` is running
-    and open the local URL printed in the terminal.
--   **A transition is rejected**: Check that its source and destination
-    states exist, and that its input symbol belongs to the declared
-    alphabet. Use `E` or `ε` for epsilon transitions, and select ε-NFA
-    mode.
+- Step-by-step simulation animation.
+- Interactive execution trace visualization.
+- Improved automatic state positioning and diagram layout.
+- Export state diagrams as images.
+- Download generated transition tables.
 
-## Contributing
+---
 
-Suggestions, bug reports, and improvements are welcome. If you are
-collaborating with others, create a feature branch for your changes and
-submit a pull request for review.
+## Project Information
 
-## License
+**Project Name:** NFA Simulator
 
-No license has been specified yet. Unless a license is added to this
-repository, the project remains under its default copyright; others
-should not assume they have permission to reuse, modify, or distribute
-it.
+**Domain:** Automata Theory and Computability
+
+**Type:** Educational Web Application
+
+**Backend:** Python and Flask
+
+**Frontend:** HTML, CSS and JavaScript
+
+---
+
+## Author
+
+**Mannan Bhatia**
+
+GitHub: [Mannan2408](https://github.com/Mannan2408)
+
+LinkedIn: [Mannan Bhatia](https://www.linkedin.com/in/mannan-bhatia-a42a462a7/)
+
+---
+
+*Built as an academic project to explore and understand Nondeterministic Finite Automata and Epsilon-NFA through interactive simulation and visualization.*
