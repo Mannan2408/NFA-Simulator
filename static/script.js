@@ -253,6 +253,7 @@ function generateAutomaton() {
 // 6. SVG VISUALIZATION
 // ------------------------------------------
 
+
 function renderAutomaton(machine) {
 
     const container = $("visualization").querySelector(
@@ -263,21 +264,47 @@ function renderAutomaton(machine) {
 
     const count = machine.states.length;
 
-    const width = Math.max(650, count * 190 + 100);
-    const height = 340;
-
     const svgNS = "http://www.w3.org/2000/svg";
+
+    // ==========================================
+    // 1. AUTOMATIC CANVAS LAYOUT
+    // ==========================================
+
+    let width, height;
+    let columns, rows;
+
+    if (count <= 4) {
+
+        columns = Math.max(count, 1);
+        rows = 1;
+
+        width = Math.max(760, count * 210 + 160);
+        height = 360;
+
+    } else {
+
+        columns = Math.ceil(Math.sqrt(count));
+        rows = Math.ceil(count / columns);
+
+        width = columns * 230 + 140;
+        height = rows * 190 + 160;
+
+    }
 
     const svg = document.createElementNS(svgNS, "svg");
 
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
+
     svg.style.display = "block";
-    svg.style.maxWidth = "100%";
+    svg.style.width = `${width}px`;
+    svg.style.maxWidth = "none";
     svg.style.margin = "auto";
 
-    // Arrow definitions
+    // ==========================================
+    // 2. ARROW DEFINITIONS
+    // ==========================================
 
     const defs = document.createElementNS(svgNS, "defs");
 
@@ -289,6 +316,7 @@ function renderAutomaton(machine) {
     marker.setAttribute("refX", "8");
     marker.setAttribute("refY", "3");
     marker.setAttribute("orient", "auto");
+    marker.setAttribute("markerUnits", "strokeWidth");
 
     const arrow = document.createElementNS(svgNS, "path");
 
@@ -299,50 +327,88 @@ function renderAutomaton(machine) {
     defs.appendChild(marker);
     svg.appendChild(defs);
 
-    // State positions
+    // ==========================================
+    // 3. AUTOMATIC STATE POSITIONS
+    // ==========================================
 
     const positions = {};
 
     machine.states.forEach((state, index) => {
 
-        positions[state] = {
-            x: 75 + index * ((width - 150) / Math.max(count - 1, 1)),
-            y: 175
-        };
+        let x, y;
+
+        if (count <= 4) {
+
+            x = count === 1
+                ? width / 2
+                : 100 + index * ((width - 200) / (count - 1));
+
+            y = 180;
+
+        } else {
+
+            const col = index % columns;
+            const row = Math.floor(index / columns);
+
+            x = 100 + col * 230;
+            y = 110 + row * 190;
+
+        }
+
+        positions[state] = { x, y };
 
     });
 
-    // Group transitions by source and destination
+    // ==========================================
+    // 4. GROUP TRANSITIONS
+    // ==========================================
 
-    const edgeGroups = {};
+    const edgeGroups = new Map();
 
     machine.transitions.forEach(transition => {
 
+        const from = transition.from;
+
+        const rawSymbol = String(transition.symbol).trim();
+
+        const symbol = rawSymbol.toUpperCase() === "E"
+            ? "ε"
+            : rawSymbol;
+
         transition.destinations.forEach(destination => {
 
-            const key = JSON.stringify([
-                transition.from,
-                destination
-            ]);
+            const key = JSON.stringify([from, destination]);
 
-            if (!edgeGroups[key]) {
-                edgeGroups[key] = [];
+            if (!edgeGroups.has(key)) {
+                edgeGroups.set(key, {
+                    from,
+                    to: destination,
+                    symbols: []
+                });
             }
 
-            edgeGroups[key].push(transition.symbol);
+            const group = edgeGroups.get(key);
+
+            if (!group.symbols.includes(symbol)) {
+                group.symbols.push(symbol);
+            }
 
         });
 
     });
 
-    // Draw transitions
+    // ==========================================
+    // 5. DRAW TRANSITION EDGES
+    // ==========================================
 
-    Object.entries(edgeGroups).forEach(([key, symbols]) => {
+    edgeGroups.forEach(edge => {
 
-        const [from, to] = JSON.parse(key);
+        const { from, to, symbols } = edge;
 
         const p1 = positions[from];
         const p2 = positions[to];
+
+        if (!p1 || !p2) return;
 
         const path = document.createElementNS(svgNS, "path");
 
@@ -350,52 +416,104 @@ function renderAutomaton(machine) {
         let labelX;
         let labelY;
 
+        // --------------------------------------
+        // SELF LOOP
+        // --------------------------------------
+
         if (from === to) {
 
-            d = `M ${p1.x - 19} ${p1.y - 26}
-                 C ${p1.x - 85} ${p1.y - 115},
-                   ${p1.x + 85} ${p1.y - 115},
-                   ${p1.x + 19} ${p1.y - 26}`;
+            d = `
+                M ${p1.x - 20} ${p1.y - 28}
+                C ${p1.x - 95} ${p1.y - 125},
+                  ${p1.x + 95} ${p1.y - 125},
+                  ${p1.x + 20} ${p1.y - 28}
+            `;
 
             labelX = p1.x;
-            labelY = p1.y - 90;
+            labelY = p1.y - 100;
 
-        } else {
+        }
 
-            const dx = p2.x - p1.x;
-            const dy = p2.y - p1.y;
+        // --------------------------------------
+        // NORMAL TRANSITION
+        // --------------------------------------
 
-            const distance = Math.hypot(dx, dy) || 1;
+        else {
 
-            const ux = dx / distance;
-            const uy = dy / distance;
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
 
-            const sx = p1.x + ux * 36;
-            const sy = p1.y + uy * 36;
+    const distance = Math.hypot(dx, dy) || 1;
 
-            const ex = p2.x - ux * 36;
-            const ey = p2.y - uy * 36;
+    const ux = dx / distance;
+    const uy = dy / distance;
 
-            const direction = from.localeCompare(to) < 0 ? 1 : -1;
-            const curve = direction * Math.min(45, distance * 0.12);
+    const radius = 36;
 
-            const cx = (sx + ex) / 2 - uy * curve;
-            const cy = (sy + ey) / 2 + ux * curve;
+    const sx = p1.x + ux * radius;
+    const sy = p1.y + uy * radius;
 
-            d = `M ${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`;
+    const ex = p2.x - ux * radius;
+    const ey = p2.y - uy * radius;
 
-            labelX = (sx + 2 * cx + ex) / 4;
-            labelY = (sy + 2 * cy + ey) / 4 - 10;
+    // Check whether a reverse transition exists
+
+    const reverseKey = JSON.stringify([to, from]);
+
+    const hasReverse = edgeGroups.has(reverseKey);
+
+    // Detect long horizontal transitions
+
+    const sameRow = Math.abs(p1.y - p2.y) < 1;
+
+    const fromIndex = machine.states.indexOf(from);
+    const toIndex = machine.states.indexOf(to);
+
+    const isLongHorizontal =
+        sameRow && Math.abs(toIndex - fromIndex) > 1;
+    // Calculate curve direction and strength
+
+    let curve = 0;
+
+    if (isLongHorizontal) {
+
+        // Curve away from the other row of states
+
+        curve = p1.y <= height / 2 ? -70 : 70;
+
+    } else if (hasReverse) {
+
+        // Separate opposite-direction transitions
+
+        curve = 48;
+
+}
+
+// Calculate quadratic curve control point
+
+const cx = (sx + ex) / 2 - uy * curve;
+const cy = (sy + ey) / 2 + ux * curve;
+
+d = `M ${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`;
+
+// Calculate transition label position
+
+labelX = (sx + 2 * cx + ex) / 4;
+labelY = (sy + 2 * cy + ey) / 4 - 12;
 
         }
 
         path.setAttribute("d", d);
         path.setAttribute("fill", "none");
         path.setAttribute("stroke", "#8299c7");
-        path.setAttribute("stroke-width", "2");
+        path.setAttribute("stroke-width", "2.3");
         path.setAttribute("marker-end", "url(#nfa-arrow)");
 
         svg.appendChild(path);
+
+        // --------------------------------------
+        // TRANSITION LABEL
+        // --------------------------------------
 
         const label = document.createElementNS(svgNS, "text");
 
@@ -406,17 +524,28 @@ function renderAutomaton(machine) {
         label.setAttribute("font-weight", "bold");
         label.setAttribute("text-anchor", "middle");
 
+        // Improve readability over diagram lines
+
+        label.setAttribute("paint-order", "stroke");
+        label.setAttribute("stroke", "#111c30");
+        label.setAttribute("stroke-width", "5");
+        label.setAttribute("stroke-linejoin", "round");
+
         label.textContent = symbols.join(", ");
 
         svg.appendChild(label);
 
     });
 
-    // Draw start arrow and state nodes
+    // ==========================================
+    // 6. DRAW START ARROWS AND STATE NODES
+    // ==========================================
 
     machine.states.forEach(state => {
 
         const p = positions[state];
+
+        // Start arrow
 
         if (state === machine.start) {
 
@@ -436,6 +565,8 @@ function renderAutomaton(machine) {
 
         const isFinal = machine.finals.includes(state);
 
+        // Outer state circle
+
         const circle = document.createElementNS(svgNS, "circle");
 
         circle.setAttribute("cx", p.x);
@@ -446,6 +577,8 @@ function renderAutomaton(machine) {
         circle.setAttribute("stroke-width", "2.5");
 
         svg.appendChild(circle);
+
+        // Inner circle for final states
 
         if (isFinal) {
 
@@ -462,6 +595,8 @@ function renderAutomaton(machine) {
 
         }
 
+        // State name
+
         const text = document.createElementNS(svgNS, "text");
 
         text.setAttribute("x", p.x);
@@ -477,22 +612,36 @@ function renderAutomaton(machine) {
 
     });
 
+    // ==========================================
+    // 7. ADD SVG TO CONTAINER
+    // ==========================================
+
     container.style.display = "block";
-    container.style.minHeight = "300px";
+    container.style.minHeight = `${height}px`;
     container.style.overflowX = "auto";
+    container.style.overflowY = "hidden";
+
     container.appendChild(svg);
+
+    // ==========================================
+    // 8. DIAGRAM CAPTION
+    // ==========================================
 
     const caption = document.createElement("p");
 
     caption.style.color = "#8795aa";
     caption.style.fontSize = "12px";
     caption.style.marginTop = "18px";
+    caption.style.textAlign = "center";
+
     caption.textContent =
         `${machine.type === "epsilon" ? "ε-NFA" : "Standard NFA"} · ` +
         `${count} states · ${machine.transitions.length} transition entries`;
 
     container.appendChild(caption);
+
 }
+
 
 
  // ==========================================
