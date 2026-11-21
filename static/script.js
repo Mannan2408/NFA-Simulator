@@ -241,6 +241,7 @@ function generateAutomaton() {
     generatedAutomaton = machine;
 
     renderAutomaton(machine);
+    renderTransitionTable(machine);
 
     showMessage(
         "Automaton generated successfully! You can now view its state diagram.",
@@ -493,6 +494,169 @@ function renderAutomaton(machine) {
     container.appendChild(caption);
 }
 
+
+ // ==========================================
+ // AUTOMATIC TRANSITION TABLE GENERATION
+ // ==========================================
+
+function renderTransitionTable(machine) {
+
+    const container = $("transitionTableContainer");
+
+    container.innerHTML = "";
+
+    // Get alphabet symbols
+
+    const symbols = [...machine.alphabet];
+
+    // Add epsilon column for epsilon-NFA
+
+    if (machine.type === "epsilon") {
+        symbols.push("ε");
+    }
+
+    // Create transition lookup map
+
+    const transitionMap = new Map();
+
+    machine.transitions.forEach(transition => {
+
+        const from = transition.from;
+        const symbol = normalizeSymbol(transition.symbol);
+
+        const key = JSON.stringify([from, symbol]);
+
+        if (!transitionMap.has(key)) {
+            transitionMap.set(key, new Set());
+        }
+
+        transition.destinations.forEach(destination => {
+            transitionMap.get(key).add(destination);
+        });
+
+    });
+
+    // Create table
+
+    const table = document.createElement("table");
+
+    table.className = "transition-matrix";
+
+    // Create table header
+
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+
+    const stateHeader = document.createElement("th");
+
+    stateHeader.textContent = "STATE";
+
+    headerRow.appendChild(stateHeader);
+
+    symbols.forEach(symbol => {
+
+        const th = document.createElement("th");
+
+        th.textContent = symbol;
+
+        headerRow.appendChild(th);
+
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Create table body
+
+    const tbody = document.createElement("tbody");
+
+    machine.states.forEach(state => {
+
+        const row = document.createElement("tr");
+
+        const stateCell = document.createElement("td");
+
+        const isStart = state === machine.start;
+        const isFinal = machine.finals.includes(state);
+
+        let stateLabel = "";
+
+        if (isStart) stateLabel += "→ ";
+        if (isFinal) stateLabel += "* ";
+
+        stateCell.textContent = stateLabel + state;
+
+        if (isStart) {
+            stateCell.classList.add("start-state-cell");
+        }
+
+        if (isFinal) {
+            stateCell.classList.add("final-state-cell");
+        }
+
+        row.appendChild(stateCell);
+
+        // Generate destination cells
+
+        symbols.forEach(symbol => {
+
+            const cell = document.createElement("td");
+
+            const key = JSON.stringify([state, symbol]);
+
+            const destinations = transitionMap.get(key);
+
+            if (destinations && destinations.size > 0) {
+
+                // Maintain the original state order
+
+                const orderedDestinations = machine.states.filter(
+                    destination => destinations.has(destination)
+                );
+
+                cell.textContent =
+                    "{ " + orderedDestinations.join(", ") + " }";
+
+                cell.classList.add("transition-present");
+
+            } else {
+
+                cell.textContent = "∅";
+
+                cell.classList.add("transition-empty");
+
+            }
+
+            row.appendChild(cell);
+
+        });
+
+        tbody.appendChild(row);
+
+    });
+
+    table.appendChild(tbody);
+
+    // Add table to the page
+
+    container.appendChild(table);
+
+    // Add legend
+
+    const legend = document.createElement("div");
+
+    legend.className = "transition-legend";
+
+    legend.innerHTML = `
+        <span><strong>→</strong> Start state</span>
+        <span><strong>*</strong> Final state</span>
+        <span><strong>∅</strong> No transition</span>
+    `;
+
+    container.appendChild(legend);
+
+}
+
 // ------------------------------------------
 // 7. CLEAR GENERATED OUTPUT
 // ------------------------------------------
@@ -513,6 +677,20 @@ function clearGeneratedOutput() {
     `;
 
     $("simulationResult").innerHTML = "";
+
+    const tableContainer = $("transitionTableContainer");
+
+    if (tableContainer) {
+        tableContainer.innerHTML = `
+            <div class="table-placeholder">
+                <div class="graph-icon">▦</div>
+                <h3>No transition table available</h3>
+                <p>
+                    Generate an automaton to display its transition table.
+                </p>
+            </div>
+        `;
+    }
 
 }
 
